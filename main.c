@@ -34,7 +34,7 @@
 
 #define DEVICE_NAME                      "SitRight"                          /**< Name of device. Will be included in the advertising data. */
 #define APP_ADV_INTERVAL                 300                                        /**< The advertising interval (in units of 0.625 ms. This value corresponds to 25 ms). */
-#define APP_ADV_TIMEOUT_IN_SECONDS       180                                        /**< The advertising timeout in units of seconds. */
+#define APP_ADV_TIMEOUT_IN_SECONDS       3600                                        /**< The advertising timeout in units of seconds. */
 
 #define APP_TIMER_PRESCALER              0                                          /**< Value of the RTC1 PRESCALER register. */
 #define APP_TIMER_OP_QUEUE_SIZE          4                                          /**< Size of timer operation queues. */
@@ -69,7 +69,7 @@ ble_fbs_t m_feedback_service;
 APP_TIMER_DEF(m_pressure_char_timer_id);
 #define PRESSURE_CHAR_TIMER_INTERVAL     APP_TIMER_TICKS(500, APP_TIMER_PRESCALER) // 500 ms intervals
 APP_TIMER_DEF(m_accel_char_timer_id);
-#define ACCEL_CHAR_TIMER_INTERVAL     APP_TIMER_TICKS(600, APP_TIMER_PRESCALER) // 600 ms intervals
+#define ACCEL_CHAR_TIMER_INTERVAL     APP_TIMER_TICKS(50, APP_TIMER_PRESCALER) // 500 ms intervals
 
 static ble_uuid_t       m_adv_uuids[] = {{BLE_UUID_POSTURE_SERVICE_UUID, BLE_UUID_TYPE_VENDOR_BEGIN}}; 
                                    
@@ -112,8 +112,8 @@ static void pressure_timer_timeout_handler(void * p_context)
 		//		buttValue[2*k+1] += buttBuffer[j][k];///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
        //}
 		
-		 buttValue[2*k] = (uint8_t)(buttBuffer[0][k]>>8);///	;            //TODO: cast from 16bit to 8 bit
-		 buttValue[2*k+1] = (uint8_t)(buttBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
+		 buttValue[2*k+1] = (uint8_t)(buttBuffer[0][k]>>8);///	;            //TODO: cast from 16bit to 8 bit
+		 buttValue[2*k] = (uint8_t)(buttBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
     }
     for(size_t k=0; k<NUM_BACK_SENSORS; k++){
         //for(size_t j; j<CIRCULAR_BUFFER_SIZE;j++){
@@ -121,8 +121,8 @@ static void pressure_timer_timeout_handler(void * p_context)
         //        backValue[2*k] += backBuffer[j][k];///CIRCULAR_BUFFER_SIZE;
 		//		backValue[2*k+1] += backBuffer[j][k];///CIRCULAR_BUFFER_SIZE;
 		//}		
-				 backValue[2*k] = (uint8_t)(backBuffer[0][k]>>8);///CIRCULAR_BUFFER_SIZE;
-				backValue[2*k+1] = (uint8_t)(backBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;
+				 backValue[2*k+1] = (uint8_t)(backBuffer[0][k]>>8);///CIRCULAR_BUFFER_SIZE;
+				backValue[2*k] = (uint8_t)(backBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;
         
     }
 	
@@ -144,15 +144,15 @@ static void accel_timer_timeout_handler(void * p_context)
     i = i%CIRCULAR_BUFFER_SIZE;
 
     //Sample the sensors here
-    uint16_t buttValue[9]={0};
-    uint16_t backValue[4]={0};
+    uint16_t buttValue[NUM_BUTT_SENSORS]={0};
+    uint16_t backValue[NUM_BACK_SENSORS]={0};
     get_butt_matrix(buttValue);
     get_back_matrix(backValue);
 	
     memcpy(&buttBuffer[i], buttValue, sizeof(buttValue));
     memcpy(&backBuffer[i], backValue, sizeof(backValue));
 
-    //Blinky light ot show it's happening
+    //Blinky light to show it's happening
     nrf_gpio_pin_toggle(LED_2);
 }
 
