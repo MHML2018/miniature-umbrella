@@ -1,0 +1,11 @@
+*.swp
+*.swo
+*.o
+*.hex
+*.bin
+*.map
+*.uvprojx
+*.uvguix
+*.uvoptx
+*.uv
+*.bat
