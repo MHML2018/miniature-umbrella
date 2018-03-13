@@ -106,27 +106,35 @@ static void pressure_timer_timeout_handler(void * p_context)
     //Alernatively, average circular buffer of sensor data
 	get_butt_matrix(buttBuffer[0]);
 	get_back_matrix(backBuffer[0]);
+
     for(size_t k=0; k<NUM_BUTT_SENSORS; k++){
-       // for(size_t j; j<CIRCULAR_BUFFER_SIZE;j++){
-       //         buttValue[2*k] += buttBuffer[j][k];///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
-		//		buttValue[2*k+1] += buttBuffer[j][k];///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
-       //}
-		
-		 buttValue[2*k+1] = (uint8_t)(buttBuffer[0][k]>>8);///	;            //TODO: cast from 16bit to 8 bit
-		 buttValue[2*k] = (uint8_t)(buttBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;            //TODO: cast from 16bit to 8 bit
+        uint32_t averageVal = 0;
+        uint32_t upperBits = 0;
+        uint32_t lowerBits = 0; 
+       for(size_t j; j<CIRCULAR_BUFFER_SIZE;j++){
+            averageVal += buttBuffer[j][k];
+        }
+        averageVal = averageVal / CIRCULAR_BUFFER_SIZE;
+        upperBits = (averageVal>>8)&0xFF;
+        lowerBits = (averageVal)&0xFF;
+	    buttValue[2*k+1] = (uint8_t)upperBits;
+	    buttValue[2*k] = (uint8_t)lowerBits;
     }
+
     for(size_t k=0; k<NUM_BACK_SENSORS; k++){
-        //for(size_t j; j<CIRCULAR_BUFFER_SIZE;j++){
-            //TODO: cast from 16 bit to 8 bit
-        //        backValue[2*k] += backBuffer[j][k];///CIRCULAR_BUFFER_SIZE;
-		//		backValue[2*k+1] += backBuffer[j][k];///CIRCULAR_BUFFER_SIZE;
-		//}		
-				 backValue[2*k+1] = (uint8_t)(backBuffer[0][k]>>8);///CIRCULAR_BUFFER_SIZE;
-				backValue[2*k] = (uint8_t)(backBuffer[0][k]);///CIRCULAR_BUFFER_SIZE;
-        
+        uint32_t averageVal = 0;
+        uint32_t upperBits = 0;
+        uint32_t lowerBits = 0; 
+       for(size_t j; j<CIRCULAR_BUFFER_SIZE;j++){
+            averageVal += backBuffer[j][k];
+        }
+        averageVal = averageVal / CIRCULAR_BUFFER_SIZE;
+        upperBits = (averageVal>>8)&0xFF;
+        lowerBits = (averageVal)&0xFF;
+	    backValue[2*k+1] = (uint8_t)upperBits;
+	    backValue[2*k] = (uint8_t)lowerBits;
     }
 	
-	//buttValue[0]=0x33;
     //Push values to phone
     pressure_characteristic_update(&m_posture_service, &buttValue[0]);
     accel_characteristic_update(&m_posture_service, &backValue[0]);
